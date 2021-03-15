@@ -37,14 +37,21 @@ class _MyHomePageState extends State<MyHomePage> {
     1883,
   );
 
+  String status = "Not Connected";
   List orders = [];
 
   Future<MqttServerClient> connect() async {
     client.logging(on: true);
     client.onConnected = () {
+      setState(() {
+        status = "Connected";
+      });
       print('Connected');
     };
     client.onDisconnected = () {
+      setState(() {
+        status = "Disconnected";
+      });
       print('Disconnected');
     };
     client.onUnsubscribed = (String topic) {
@@ -132,6 +139,8 @@ class _MyHomePageState extends State<MyHomePage> {
               },
               child: Text("Connect"),
             ),
+            SizedBox(height: 20),
+            Text("Status : $status"),
             SizedBox(height: 20),
             Text("Daftar Pesanan: ", style: TextStyle(fontSize: 22.5)),
             orders.length == 0
