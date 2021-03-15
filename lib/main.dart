@@ -135,9 +135,13 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             ElevatedButton(
               onPressed: () {
-                connect();
+                if (status != "Connected") {
+                  connect();
+                } else {
+                  disconnect();
+                }
               },
-              child: Text("Connect"),
+              child: Text(status != "Connected" ? "Connect" : "Disconnect"),
             ),
             SizedBox(height: 20),
             Text("Status : $status"),
