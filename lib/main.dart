@@ -38,7 +38,6 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 
   String status = "Not Connected";
-  String error = "";
   List orders = [];
 
   Future<MqttServerClient> connect() async {
@@ -81,10 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       await client.connect();
     } catch (e) {
-      print('Exception: $e');
-      setState(() {
-        error = e;
-      });
+      print('Exception: ${e.toString()}');
       client.disconnect();
     }
 
@@ -110,11 +106,11 @@ class _MyHomePageState extends State<MyHomePage> {
     client.subscribe("01ESP32Subscribe", MqttQos.atLeastOnce);
   }
 
-  void publish() {
+  void publish(String status) {
     const pubTopic = '01ESP32Publish';
     final builder = MqttClientPayloadBuilder();
     builder.addString(json.encode({
-      "payload": {"status": "OK"}
+      "payload": {"status": status}
     }));
     client.publishMessage(pubTopic, MqttQos.atLeastOnce, builder.payload);
   }
@@ -138,6 +134,8 @@ class _MyHomePageState extends State<MyHomePage> {
         child: ListView(
           children: [
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                  primary: status != "Connected" ? Colors.blue : Colors.teal),
               onPressed: () {
                 if (status != "Connected") {
                   connect();
@@ -149,21 +147,13 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SizedBox(height: 20),
             Text("Status : $status"),
-            error != ""
-                ? Column(
-                    children: [
-                      SizedBox(height: 15),
-                      Text("Error: $error"),
-                    ],
-                  )
-                : Container(),
             SizedBox(height: 20),
             Text("Daftar Pesanan: ", style: TextStyle(fontSize: 22.5)),
             orders.length == 0
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(height: 15),
+                      SizedBox(height: 20),
                       Text("Anda belum memiliki pesanan"),
                     ],
                   )
@@ -172,15 +162,40 @@ class _MyHomePageState extends State<MyHomePage> {
               shrinkWrap: true,
               itemCount: orders.length,
               itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text('Nama Pesanan: ${orders[index]}'),
-                  subtitle: Text('tap untuk mengonfirmasi'),
-                  onTap: () {
-                    publish();
-                    setState(() {
-                      orders.removeAt(index);
-                    });
-                  },
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20),
+                    Text(
+                      '${orders[index]}',
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                          onPressed: () {
+                            publish("OK");
+                            setState(() {
+                              orders.removeAt(index);
+                            });
+                          },
+                          child: Text("Terima"),
+                        ),
+                        SizedBox(width: 20),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(primary: Colors.red),
+                          onPressed: () {
+                            publish("REJECT");
+                            setState(() {
+                              orders.removeAt(index);
+                            });
+                          },
+                          child: Text("Tolak"),
+                        ),
+                      ],
+                    )
+                  ],
                 );
               },
             ),
