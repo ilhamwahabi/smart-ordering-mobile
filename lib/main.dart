@@ -38,6 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   );
 
   String status = "Not Connected";
+  String error = "";
   List orders = [];
 
   Future<MqttServerClient> connect() async {
@@ -81,6 +82,9 @@ class _MyHomePageState extends State<MyHomePage> {
       await client.connect();
     } catch (e) {
       print('Exception: $e');
+      setState(() {
+        error = e;
+      });
       client.disconnect();
     }
 
@@ -145,6 +149,14 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             SizedBox(height: 20),
             Text("Status : $status"),
+            error != ""
+                ? Column(
+                    children: [
+                      SizedBox(height: 15),
+                      Text("Error: $error"),
+                    ],
+                  )
+                : Container(),
             SizedBox(height: 20),
             Text("Daftar Pesanan: ", style: TextStyle(fontSize: 22.5)),
             orders.length == 0
